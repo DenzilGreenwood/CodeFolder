@@ -1,0 +1,17 @@
+{
+    "version": "1.0.0",
+    "default_canonicalization_version": "ciaf-json-v1",
+    "domains": {
+        "RECEIPT": "AGEI:receipt:ciaf-json-v1",
+        "POLICY_VERSION": "AGEI:policy-version:ciaf-json-v1",
+        "POLICY_EVALUATION": "AGEI:policy-evaluation:ciaf-json-v1",
+        "GATE_EVALUATION": "AGEI:gate-evaluation:ciaf-json-v1",
+        "EVIDENCE_OBJECT": "AGEI:evidence-object:ciaf-json-v1",
+        "VAULT_OBJECT": "AGEI:vault-object:ciaf-json-v1",
+        "PROOF_BUNDLE": "AGEI:proof-bundle:ciaf-json-v1",
+        "AUDIT_MANIFEST": "AGEI:audit-manifest:ciaf-json-v1",
+        "AGENT_TOOL_CALL": "AGEI:agent-tool-call:ciaf-json-v1",
+        "MODEL_FINE_TUNING": "AGEI:model-fine-tuning:ciaf-json-v1",
+        "PROMPT_GUARDRAIL": "AGEI:prompt-guardrail:ciaf-json-v1"
+    }
+}

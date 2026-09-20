@@ -27,7 +27,7 @@ In a multi-step task, an agent's context window can drift or drop constraints se
 
 LCM enforces **RFC 8785 (JSON Canonicalization Scheme)** with **safe-integer checks (±2^53-1)** at Stage 4 of the pipeline. Every prompt, parameter set, and tool call is transformed into a byte-exact representation before hashing:
 
-$$\text{content\_hash} = \text{SHA256}(\text{UTF8}(\text{domain\_separator}) \parallel \text{\x00} \parallel \text{JCS}(\text{payload}))$$
+$$\text{content\_hash} = \text{SHA256}(\text{UTF8}(\text{domain\_separator}) \parallel \text{0x00} \parallel \text{JCS}(\text{payload}))$$
 
 This creates a stable content pointer. If an agent's output drifts from expected policy constraints, the recomputed content hash diverges instantly, pinpointing the exact step where the silent failure occurred.
 

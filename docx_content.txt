@@ -1,0 +1,154 @@
+Governance Planes for Agentic AI
+Identity, Policy, Privilege, Execution, and Evidence
+A category paper within the CIAF evidence-infrastructure research program
+Denzil Greenwood
+Founder and Head Researcher, CognitiveInsight.ai
+April 2026
+Central claim: agentic systems require governance that attaches identity, privilege, policy, execution boundaries, and evidence to each action, not only output filtering after the fact.
+Abstract
+Agentic AI changes the governance problem because systems no longer only generate content; they can plan, call tools, retrieve data, change external state, and act under delegated permissions. This paper argues that output guardrails and post hoc monitoring are insufficient for such systems. Instead, agentic systems require runtime governance that binds each consequential action to five coordinated planes: identity, policy, privilege, execution, and evidence. The paper positions agents as governed principals rather than free-floating orchestrators and proposes a proof-carrying operating model in which tool use is mediated by policy checks, scoped authorization, approval artifacts when needed, and evidence-bearing action receipts. This approach extends the broader AI Governance Evidence Infrastructure category by applying the same lifecycle accountability logic to runtime action. It also aligns with the emerging emphasis in current agent standards and security work on secure action, trust, interoperability, and autonomous-system risk management [1][2][3][4].
+1. Introduction
+Agents raise the stakes of AI governance because they can act. A chatbot that produces poor text may create business risk; an agent that queries internal systems, sends messages, modifies records, purchases services, or triggers downstream automations creates action risk. As official guidance and industry practice continue to mature, the emerging consensus is that agent systems must be designed to behave safely, predictably, and with clear boundaries around tool use and orchestration [2][3]. This paper extends that concern into a governance architecture: agentic systems should be treated as runtime actors whose actions are bounded by explicit authority, mediated by policy, and recorded as evidence-bearing events.
+The argument here is narrower than a general paper on agent safety and broader than a paper on prompt-level guardrails. The claim is that high-stakes agents require a control architecture attached to each consequential action. That architecture can be organized into five coordinated planes: identity, policy, privilege, execution, and evidence. Together, these planes answer five questions that matter to operators, auditors, and investigators: who is acting, under which rules, with what authority, through which execution boundary, and with what proof afterward.
+This framing fits naturally within the broader AI Governance Evidence Infrastructure program. Prior work in this sequence defined the category problem and the lifecycle operating model; this paper focuses on runtime action under agentic conditions. The shift from static policy to governed action is the core move. Governance becomes operational when tools, data access, approvals, and action outcomes are mediated before execution and reconstructable after execution.
+Figure 1. Five governance planes for agentic AI
+Figure 1. Five governance planes for agentic AI diagram showing identity, policy, privilege, execution, and evidence as coordinated layers surrounding an agent tool call and its resulting action receipt.
+2. Governance Planes Overview
+The five-plane model separates concerns that are often collapsed together in agent discussions. This separation matters because each plane solves a different failure mode. Identity addresses attribution. Policy addresses allowed and disallowed behavior. Privilege addresses bounded authority. Execution addresses the mechanics of mediation, isolation, and tool invocation. Evidence addresses proof after the fact. A system that implements only one or two of these planes may be useful, but it is not fully governed.
+Identity plane
+The identity plane establishes the principal that the agent represents and the runtime identity under which it is operating. This may include the agent service identity, the user or service on whose behalf the agent is acting, the tenant or domain context, the session context, and the specific workflow or role the agent has been assigned. Identity provides the basis for accountability and separation of duties.
+Policy plane
+The policy plane provides the rules used to evaluate candidate actions. Policies can include allowlists and denylists, data-domain restrictions, tool routing constraints, approval thresholds, model-use constraints, jurisdictional limits, content restrictions, and risk classifications for specific action classes. The policy plane must be implemented at runtime rather than merely described in documentation.
+Privilege plane
+Privilege determines what authority is currently available to the agent. Least privilege should be the default. Higher-risk actions should require scoped and time-bound elevation, often with human approval or a second control signal. This is consistent with the broader direction of agent security work, which increasingly treats delegated action as a distinct risk class rather than an extension of ordinary API access [1][4].
+Execution plane
+The execution plane is where the action is actually mediated. It includes tool wrappers, parameter checking, sandboxing or isolated execution environments where appropriate, request signing, contextual binding, transaction identifiers, and mechanisms that prevent the agent from bypassing the policy and privilege checks. This plane turns abstract governance intent into enforceable runtime behavior.
+Evidence plane
+The evidence plane produces durable records proving what the agent attempted, what checks were performed, what authority was present, whether escalation occurred, and what outcome resulted. Without this plane, organizations are left inferring governance from logs or from scattered control artifacts. With it, each action can become an independently reviewable event in the larger evidence architecture.
+Table 1. Governance planes and the failure modes they address
+Plane
+Primary question
+Typical controls
+Failure if absent
+Identity
+Who is acting?
+principal binding, session scope, delegation chain
+no attributable actor or principal
+Policy
+What rules apply?
+policy evaluation, action classification, deny rules
+inconsistent or invisible decision logic
+Privilege
+What authority exists now?
+least privilege, JIT elevation, approval tokens
+overbroad permissions or silent escalation
+Execution
+How is action bounded?
+tool mediation, sandboxing, parameter validation
+direct tool misuse or bypass
+Evidence
+What proof exists?
+signed receipts, denials, escalation records, outcomes
+weak post hoc reconstruction
+3. Agent Identity and Authority
+Treating an agent as a governed principal does not mean the agent becomes an independent legal or organizational actor. It means that the runtime system must explicitly model whose intent, permissions, and scope are being represented. In practice, this requires at least four identity elements: the service identity of the agent process, the delegating principal, the operational role or workflow role, and the session or transaction context in which the action occurs.
+This distinction becomes important in common enterprise patterns. A search assistant that retrieves public information may operate under a general low-risk role. A claims-processing agent may operate under a workflow role with a narrow authority boundary. A procurement agent may begin in read-only mode and then request elevation for external purchase actions. In each case, the key governance question is not merely whether the system can perform the action, but whether it can perform it on behalf of this principal, in this context, under this scope.
+Authority should therefore be explicit and scoped. A useful pattern is to treat the agent’s default authority as a minimal execution token tied to a workflow and tenant context. Additional authority is attached only through approval or policy-qualified elevation. This reduces the blast radius of prompt failures, tool misuse, and context confusion while preserving a clean evidence trail of who granted what to whom and for how long.
+4. Policy Mediation and Privilege Control
+Policy mediation is the point at which the system determines whether a proposed action is allowed, denied, or escalated. This should occur before execution and should examine more than the final tool name. The policy engine should be able to inspect action category, parameters, data domain, actor role, destination, risk level, user state, and potentially prior action history inside the session. When the action exceeds standing authority, the system should not silently proceed; it should shift into a privilege workflow.
+Least privilege is the default governance posture. For agents, least privilege means more than giving tools narrow API keys. It means default-denying risky categories until a policy condition or approval artifact is present. It also means that elevation should be just-in-time, purpose-bound, and time-bound. This pattern is familiar from privileged access management, but in agentic systems it must be embedded into orchestration itself rather than bolted on afterward.
+Denial receipts are an important and often neglected part of this design. If a sensitive tool call is blocked because policy conditions are not satisfied, the system should emit a denial artifact showing the attempted action, evaluated policy set, reason code, and available next step such as escalation, alternative tool path, or human review. Denial evidence demonstrates that governance did not merely exist on paper; it actively constrained runtime behavior.
+Figure 2. Pre-action proof-carrying tool call sequence
+ Figure 2. Pre-action proof-carrying tool call sequence diagram showing user/delegating principal -> agent -> policy engine -> privilege service -> tool wrapper -> evidence vault, including approve, deny, and escalate branches.
+5. Execution Controls and Pre-Action Proof
+Execution controls are the point at which governance becomes real. A tool call should not be issued solely because the model selected a function name in a reasoning loop. It should be issued only after the action has been transformed into a mediated request that carries proof of context, policy state, and authority. This paper refers to that pattern as pre-action proof.
+Pre-action proof does not require a single implementation, but it does require a specific outcome: before the tool executes, the surrounding system can demonstrate that the request is bound to an identified actor, evaluated under policy, authorized under a scope, and linked to a transaction context that can later be audited. Depending on architecture, the proof artifact may include a signed authorization token, a policy-check receipt, a context hash, a session identifier, a delegation chain, and a risk classification. The tool wrapper should reject requests lacking the required proof bundle.
+This approach is increasingly compatible with the broader direction of agent tooling. OpenAI’s official agent guidance describes agents as systems that plan, call tools, and maintain state to complete multi-step work, while emphasizing guardrails and tool design as core runtime considerations [3]. Anthropic likewise emphasizes simple, composable patterns, careful tool design, and strong control over context and orchestration [2]. The governance extension proposed here is that tool execution should become evidence-bearing and proof-carrying, not just technically callable.
+For especially sensitive actions, execution should also support multi-step outcomes: approve, deny, escalate, inspect, or require dual control. That state-machine orientation is more appropriate than a simple pass-fail view because many agent actions are neither obviously safe nor obviously forbidden. They depend on context, dollar thresholds, regulated data, or cross-system effects.
+Table 2. Example action-risk matrix for agent tool categories
+Action class
+Typical examples
+Default authority
+Extra controls
+Low risk
+public web search, draft summarization
+standing allow
+basic logging and outcome receipt
+Moderate risk
+internal read, knowledge retrieval, ticket drafting
+allow by role
+data-domain checks and session binding
+High risk
+send email, modify records, submit forms
+deny until scoped approval
+JIT elevation, explicit approval artifact
+Critical
+payments, secrets access, irreversible changes
+deny by default
+dual control, hardened execution boundary, heightened evidence
+6. Evidence Model for Agent Actions
+The evidence model for agentic systems should capture more than a final action result. At minimum, an evidence-bearing agent event should include an action identifier, timestamp, agent identity, delegating principal, workflow role, tool identifier, target resource or class, context hash or session reference, policy decision, privilege state, approval or denial artifact references, execution outcome, and any resulting state change or downstream transaction reference.
+These records should be structured as receipts rather than as free-form log lines. A receipt-oriented approach supports consistent hashing, signing, linkage, and later reconstruction into audit packs. It also allows separation between lightweight runtime footprints and heavier supporting artifacts, such as approval records, human comments, or external responses, which may be materialized or fetched only when inspection is required.
+Several receipt types are especially important for agents: attempted action receipts, policy decision receipts, privilege elevation receipts, denial receipts, tool execution receipts, escalation receipts, and completion receipts. Together, they tell a governance story that ordinary application logs rarely capture. The goal is not to maximize data volume; it is to preserve the minimum necessary structure to prove that runtime governance existed and functioned.
+Table 3. Representative receipt types for agent execution events
+Receipt type
+When emitted
+Key contents
+Control value
+Action-attempt
+agent proposes tool use
+actor, context, requested tool, target
+shows intent and context before execution
+Policy decision
+policy check completes
+policy set, result, reason, risk class
+proves rule evaluation
+Privilege elevation
+higher authority granted
+scope, approver, expiry, purpose
+proves bounded escalation
+Denial
+action blocked
+reason code, missing conditions, alternatives
+proves active constraint
+Tool execution
+tool runs
+validated parameters, execution boundary, outcome
+proves mediated execution
+Completion/outcome
+workflow step finishes
+result reference, downstream state, timestamps
+supports reconstruction
+7. Example Workflows
+Governed web search workflow
+Consider an enterprise search agent with three action classes: public search, internal knowledge retrieval, and restricted research. Public search may proceed under standing authority. Internal retrieval may require user- and tenant-bound context with filtering for protected repositories. Restricted research may require escalation because it touches regulated topics, sensitive destinations, or externally visible actions. A governed workflow records the attempted action, classifies the request, evaluates policy, binds any granted scope, executes through a mediated tool, and emits outcome receipts. If the search is denied, a denial receipt records the reason and the escalation path.
+Healthcare or claims workflow
+In a healthcare-claims scenario, an agent may gather documents, compare claim fields to policy terms, draft a recommendation, and request approval for high-dollar or exception cases. Low-dollar determinations may be auto-routed but still require evidence that the decision remained inside delegated authority. High-dollar or exception determinations should trigger approval or review gates before any external state change. The evidence trail must therefore show not only the recommendation but the authority boundary under which each step occurred.
+Enterprise action workflow
+For an enterprise operations agent, the distinction between read, recommend, and act is critical. Reading a ticket is not the same as changing a ticket, and drafting an email is not the same as sending it. A sound agent governance design turns these into distinct action classes with different privilege requirements and evidence expectations. This is how autonomy remains governable without collapsing into blanket prohibition.
+Figure 3. Escalate / approve / deny workflow for high-risk agent actions
+Placeholder: state-machine diagram showing default deny, policy evaluation, approval request, scoped authorization, tool execution, outcome receipt, and incident branch.
+8. Limitations and Open Questions
+Several open issues remain. Multi-agent systems complicate attribution because delegation may occur across specialized agents rather than from a single orchestrator. Evidence models must represent not only tool actions but inter-agent handoffs and chain-of-command within the workflow.
+Policy complexity is another challenge. Rich policy evaluation can become difficult to maintain if rule sets are fragmented across teams, products, and jurisdictions. A practical implementation must balance expressive control logic against comprehensibility and operational burden.
+A further question concerns autonomy boundaries. There is no universal threshold for which actions should require human approval. Different sectors will draw that line differently based on safety, legal exposure, reversibility, and customer impact. The architecture proposed here does not eliminate that judgment; it makes the judgment explicit and auditable.
+Finally, the governance layer itself must be governed. Approval services, privilege brokers, policy engines, and evidence stores all create new trust dependencies. The broader vault and lifecycle papers in this series address those custody and verification questions in more detail.
+9. Conclusion
+Agentic AI requires more than output guardrails. Once systems can retrieve, decide, route, and act, governance must attach to runtime action itself. The five-plane model proposed in this paper - identity, policy, privilege, execution, and evidence - provides a practical way to do that.
+The central contribution is not a claim that one vendor stack or one orchestration framework is sufficient. It is the claim that a governed agent should be able to prove who acted, under what authority, under which policy evaluation, through what execution boundary, and with what resulting evidence. That is the difference between an agent that is merely instrumented and an agent that is governable.
+Within the larger CIAF evidence-infrastructure program, this paper positions agent governance as a runtime extension of lifecycle accountability. The same discipline that governs model promotion and deployment must also govern tool use and delegated action. High-stakes agents therefore require verifiable runtime governance, not only post hoc explanation.
+References
+[1] NIST, “AI Agent Standards Initiative,” 2026. Official program page describing NIST’s effort to foster technical standards and open protocols for secure, trustworthy agent systems.
+[2] Anthropic, “Building Effective AI Agents,” official guidance on agent design patterns, tool use, orchestration, and implementation practices.
+[3] OpenAI, “A Practical Guide to Building AI Agents” and “Agents” documentation, official guidance on agent design, tools, state, and guardrails.
+[4] OWASP GenAI Security Project, “Agentic Security Initiative” and related agentic-AI threat and mitigation guidance.
+AI uses disclosure:
+This document, "AI Governance Evidence Infrastructure: A Category Framework for Cryptographically Verifiable AI Lifecycle Accountability," was prepared for concept development and publication planning, dated April 18, 2026. It was authored by Denzil Greenwood, Founder and Head Researcher at CognitiveInsight.ai.
+In the creation of this document, AI tools were utilized to generate both the text and the supporting images, with human oversight applied to both processes.
+Research Papers and Continued Work: AI Governance Evidence Infrastructure
+Cognitive Insight Audit Framework Lazy Capsule Materialization (CIAF-LCM)
+Tamper-Evident Evidence Vault for AI Lifecycle Events, Decisions, and Audit Packs 
+Dual-Layer Provenance for AI-Generated Artifacts: Explicit Watermarks and Forensic Fingerprints as Evidence Infrastructure 
+Governance Planes for Agentic AI: Identity, Policy, Privilege, Execution, and Evidence 
+Shadow AI Governance: Bringing Unmanaged AI Use into the Evidence Perimeter 
+CIAF-LCM Proposed Schema Documentation: Current Schema State, Architecture Fit, and Proposed Documentation Model 

@@ -13,6 +13,27 @@ class WORMMerkleTree:
     
     Aggregates evidence content hashes into a Merkle tree, enabling amortized
     batch verification and inclusion proofs (Paper Section 4.3 & 9.3).
+
+    Hierarchical Merkle Trees (Tree of Trees)
+    -----------------------------------------
+    Because the output of a Merkle Tree (`get_root()`) is a standard SHA-256 hash,
+    multiple WORMMerkleTree instances can be composed hierarchically. This allows
+    an entire AI lifecycle to be cryptographically bound to a single master root.
+    
+    For example, each AI event or system component can have its own tree:
+      - ingestion_tree.get_root() -> hash_A
+      - training_tree.get_root()  -> hash_B
+      - inference_tree.get_root() -> hash_C
+      
+    These sub-roots can then act as leaves in a master Model Version tree:
+      master_tree = WORMMerkleTree()
+      master_tree.append_leaf(hash_A)
+      master_tree.append_leaf(hash_B)
+      master_tree.append_leaf(hash_C)
+      master_root = master_tree.get_root()
+      
+    If any single document, training parameter, or inference log is tampered with,
+    its sub-tree root will change, instantly invalidating the master_root.
     """
 
     def __init__(self)-> None:

@@ -24,13 +24,16 @@ class CIAFCanonicalization:
     JS_MIN_SAFE_INTEGER: int = -9_007_199_254_740_991
 
     @classmethod
-    def _validate_safe_numbers(cls, data: Any, path: str = "$") -> None:
+    def _prepare_payload(cls, data: Any, path: str = "$") -> Any:
         """
-        Recursively validates that all integer values fall within the IEEE 754 
-        safe integer range [-(2^53 - 1), 2^53 - 1].
+        Recursively prepares the payload for canonicalization:
+        1. Validates IEEE 754 safe integer limits to prevent silent corruption.
+        2. Normalizes CRLF and CR line endings to LF (\\n) in strings (Paper Section 8.5).
+        
+        Returns the prepared data structure.
         """
         if isinstance(data, bool):
-            return  # bool is a subclass of int in Python
+            return data
         
         if isinstance(data, int):
             if data > cls.JS_MAX_SAFE_INTEGER or data < cls.JS_MIN_SAFE_INTEGER:
@@ -39,15 +42,20 @@ class CIAFCanonicalization:
                     f"Numbers outside [-(2^53 - 1), 2^53 - 1] MUST be formatted as "
                     f"strings prior to canonicalization to prevent silent corruption."
                 )
+            return data
         elif isinstance(data, float):
             if data != data or data in (float('inf'), float('-inf')):
                 raise ValueError(f"Invalid float value (NaN/Infinity) at '{path}': {data}")
+            return data
+        elif isinstance(data, str):
+            # Normalize CRLF and CR to LF
+            return data.replace('\r\n', '\n').replace('\r', '\n')
         elif isinstance(data, dict):
-            for key, value in data.items():
-                cls._validate_safe_numbers(value, path=f"{path}.{key}")
+            return {key: cls._prepare_payload(value, path=f"{path}.{key}") for key, value in data.items()}
         elif isinstance(data, list):
-            for index, item in enumerate(data):
-                cls._validate_safe_numbers(item, path=f"{path}[{index}]")
+            return [cls._prepare_payload(item, path=f"{path}[{index}]") for index, item in enumerate(data)]
+        
+        return data
 
     @classmethod
     def canonicalize_json(cls, data: Union[Dict[str, Any], List[Any]]) -> bytes:
@@ -60,8 +68,8 @@ class CIAFCanonicalization:
         Returns:
             Canonical UTF-8 encoded bytes.
         """
-        cls._validate_safe_numbers(data)
-        return jcs.canonicalize(data)
+        prepared_data = cls._prepare_payload(data)
+        return jcs.canonicalize(prepared_data)
 
     @classmethod
     def canonicalize_json_str(cls, data: Union[Dict[str, Any], List[Any]]) -> str:

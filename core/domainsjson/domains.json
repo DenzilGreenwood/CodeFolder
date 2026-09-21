@@ -12,6 +12,7 @@
         "AUDIT_MANIFEST": "AGEI:audit-manifest:ciaf-json-v1",
         "AGENT_TOOL_CALL": "AGEI:agent-tool-call:ciaf-json-v1",
         "MODEL_FINE_TUNING": "AGEI:model-fine-tuning:ciaf-json-v1",
-        "PROMPT_GUARDRAIL": "AGEI:prompt-guardrail:ciaf-json-v1"
+        "PROMPT_GUARDRAIL": "AGEI:prompt-guardrail:ciaf-json-v1",
+        "IDENTITY_BINDING": "AGEI:identity-binding:ciaf-json-v1"
     }
 }

@@ -158,6 +158,15 @@ def run_agentic_workflow_demo():
         logger.error("[GATE REJECTED] The Provisioned Identity Record itself failed cryptographic verification!")
         sys.exit(1)
 
+    try:
+        # Cryptographic proof that this record was actually anchored in the ledger
+        identity_hash = identity_record["integrity"]["content_hash"]
+        proof = merkle_ledger.get_inclusion_proof(identity_hash)
+        logger.info(f"[GATE] WORM Merkle inclusion proof verified. Path length: {len(proof)}")
+    except ValueError:
+        logger.error("[GATE REJECTED] Identity Binding record is NOT anchored in the WORM Ledger!")
+        sys.exit(1)
+
     # Extract the verified provisioned identity
     verified_provisioned_identity = identity_record["identity_binding"]
 
@@ -243,7 +252,15 @@ def run_agentic_workflow_demo():
 
     # Circuit Breaker Logic
     if not gate_verification["valid"]:
-        logger.error("[CIRCUIT BREAKER TRIGGERED] Gate Decision Signature or Hash Invalid!")
+        logger.error(f"[EXECUTION BLOCKED] Invalid Policy Gate Receipt! Reason: {gate_verification['error']}")
+        sys.exit(1)
+
+    try:
+        gate_hash = step2_record["integrity"]["content_hash"]
+        proof = merkle_ledger.get_inclusion_proof(gate_hash)
+        logger.info(f"[VERIFIER] WORM Merkle inclusion proof verified. Path length: {len(proof)}")
+    except ValueError:
+        logger.error("[EXECUTION BLOCKED] Policy Gate Receipt is NOT anchored in the WORM Ledger!")
         sys.exit(1)
 
     if step2_record["gate_decision"]["evaluation_outcome"] != "APPROVED":
